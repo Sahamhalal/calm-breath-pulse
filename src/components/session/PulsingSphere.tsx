@@ -11,10 +11,13 @@ export function PulsingSphere({
   phase,
   phaseDurationMs,
   bpm,
+  smoothness = 1,
 }: {
   phase: BreathPhase;
   phaseDurationMs: number;
   bpm: number;
+  /** 0 = linear/sharp turnaround, 1 = sine, >1 = long eased pauses at the ends. */
+  smoothness?: number;
 }) {
   const breathRef = useRef<HTMLDivElement>(null);
   const beatRef = useRef<HTMLDivElement>(null);
@@ -29,26 +32,38 @@ export function PulsingSphere({
     if (!el) return;
     const MIN = 0.7;
     const MAX = 1.4;
-    const STEPS = 60; // sampled sine -> smooth accel/decel with linear playback
+    const STEPS = 60; // sampled curve -> smooth accel/decel with linear playback
+    const s = Math.min(2, Math.max(0, smoothness));
     const frames = Array.from({ length: STEPS + 1 }, (_, i) => {
       const p = i / STEPS; // 0 = start of inhale, 0.5 = peak, 1 = back to floor
-      const eased = (1 - Math.cos(p * Math.PI * 2)) / 2;
+      const triangle = 1 - Math.abs(2 * p - 1); // sharp turnarounds
+      const sine = (1 - Math.cos(p * Math.PI * 2)) / 2; // natural ease
+      // 0..1 blends linear -> sine; 1..2 adds smoothstep for longer, softer
+      // pauses at the top of the inhale and the bottom of the exhale.
+      const base = s <= 1 ? triangle + (sine - triangle) * s : sine;
+      const extra = s <= 1 ? 0 : s - 1;
+      const smoothed = base * base * (3 - 2 * base);
+      const eased = base + (smoothed - base) * extra;
       return {
         transform: `scale(${(MIN + (MAX - MIN) * eased).toFixed(4)})`,
         offset: p,
       };
     });
+    // Preserve playback position so changing the setting mid-breath never snaps.
+    const prevTime = Number(breathAnimRef.current?.currentTime ?? 0);
     const anim = el.animate(frames, {
       duration: phaseDurationMs * 2,
       iterations: Infinity,
       easing: "linear",
     });
+    anim.currentTime = prevTime % (phaseDurationMs * 2);
     breathAnimRef.current = anim;
     return () => {
       anim.cancel();
       breathAnimRef.current = null;
     };
-  }, [phaseDurationMs]);
+  }, [phaseDurationMs, smoothness]);
+
 
   // Keep the loop aligned with the pacer without ever restarting it: if the
   // cycle has drifted from the phase boundary, ease the position back.

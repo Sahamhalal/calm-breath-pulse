@@ -70,6 +70,8 @@ function SessionScreen() {
   const { bpm, coherenceLive, elapsedSec } = useHrvSession();
   const { phase, phaseDurationMs, breathCount } = useBreathingPacer();
   const zones = useLockedZones(elapsedSec, coherenceLive);
+  const [smoothness, setSmoothness] = useState(1);
+
 
   return (
     <main className="flex min-h-screen flex-col bg-[image:var(--gradient-calm)] px-6 py-6">

@@ -85,13 +85,16 @@ function SessionScreen() {
             bpm
           </span>
         </div>
-        <button
-          type="button"
-          aria-label="Tutup sesi"
-          className="grid size-10 place-items-center rounded-full bg-card/70 text-muted-foreground shadow-[var(--shadow-soft)] backdrop-blur transition-colors hover:text-foreground"
-        >
-          <X className="size-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <SmoothnessSetting value={smoothness} onChange={setSmoothness} />
+          <button
+            type="button"
+            aria-label="Tutup sesi"
+            className="grid size-10 place-items-center rounded-full bg-card/70 text-muted-foreground shadow-[var(--shadow-soft)] backdrop-blur transition-colors hover:text-foreground"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
       </header>
 
       <h1 className="sr-only">Sesi biofeedback pernafasan HRV</h1>

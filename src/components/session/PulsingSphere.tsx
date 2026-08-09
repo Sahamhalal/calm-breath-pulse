@@ -11,10 +11,13 @@ export function PulsingSphere({
   phase,
   phaseDurationMs,
   bpm,
+  smoothness = 1,
 }: {
   phase: BreathPhase;
   phaseDurationMs: number;
   bpm: number;
+  /** 0 = linear/sharp turnaround, 1 = sine, >1 = long eased pauses at the ends. */
+  smoothness?: number;
 }) {
   const breathRef = useRef<HTMLDivElement>(null);
   const beatRef = useRef<HTMLDivElement>(null);

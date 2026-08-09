@@ -107,6 +107,7 @@ function SessionScreen() {
             phase={phase}
             phaseDurationMs={phaseDurationMs}
             bpm={bpm}
+            smoothness={smoothness}
           />
         </SegmentedRing>
 

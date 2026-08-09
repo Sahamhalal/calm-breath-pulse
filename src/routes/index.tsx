@@ -12,6 +12,7 @@ import {
   type Zone,
 } from "@/components/session/SegmentedRing";
 import { PulsingSphere } from "@/components/session/PulsingSphere";
+import { SmoothnessSetting } from "@/components/session/SmoothnessSetting";
 
 export const Route = createFileRoute("/")({
   head: () => ({

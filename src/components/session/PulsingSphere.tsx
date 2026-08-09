@@ -19,26 +19,61 @@ export function PulsingSphere({
   const breathRef = useRef<HTMLDivElement>(null);
   const beatRef = useRef<HTMLDivElement>(null);
   const beatAnimRef = useRef<Animation | null>(null);
+  const breathAnimRef = useRef<Animation | null>(null);
 
-  // Breath scale: retargeted only when the phase flips (never from bpm).
+  // Breath scale: ONE continuous sinusoidal cycle for the whole session, so
+  // inhale flows into exhale with no restart, no easing reset, no velocity jump
+  // at the turnaround. Phase changes only nudge it back into sync if it drifts.
   useEffect(() => {
     const el = breathRef.current;
     if (!el) return;
-    const from = getComputedStyle(el).transform;
-    const to = phase === "in" ? "scale(1.4)" : "scale(0.7)";
-    const anim = el.animate(
-      [{ transform: from === "none" ? "scale(1)" : from }, { transform: to }],
-      {
-        duration: phaseDurationMs,
-        easing: "cubic-bezier(0.37, 0, 0.63, 1)",
-        fill: "forwards",
-      },
-    );
+    const MIN = 0.7;
+    const MAX = 1.4;
+    const STEPS = 60; // sampled sine -> smooth accel/decel with linear playback
+    const frames = Array.from({ length: STEPS + 1 }, (_, i) => {
+      const p = i / STEPS; // 0 = start of inhale, 0.5 = peak, 1 = back to floor
+      const eased = (1 - Math.cos(p * Math.PI * 2)) / 2;
+      return {
+        transform: `scale(${(MIN + (MAX - MIN) * eased).toFixed(4)})`,
+        offset: p,
+      };
+    });
+    const anim = el.animate(frames, {
+      duration: phaseDurationMs * 2,
+      iterations: Infinity,
+      easing: "linear",
+    });
+    breathAnimRef.current = anim;
     return () => {
-      anim.commitStyles();
       anim.cancel();
+      breathAnimRef.current = null;
     };
+  }, [phaseDurationMs]);
+
+  // Keep the loop aligned with the pacer without ever restarting it: if the
+  // cycle has drifted from the phase boundary, ease the position back.
+  useEffect(() => {
+    const anim = breathAnimRef.current;
+    if (!anim) return;
+    const cycle = phaseDurationMs * 2;
+    const target = phase === "in" ? 0 : phaseDurationMs;
+    const current = Number(anim.currentTime ?? 0) % cycle;
+    let drift = current - target;
+    if (drift > cycle / 2) drift -= cycle;
+    if (drift < -cycle / 2) drift += cycle;
+    // Only correct meaningful drift, and correct gradually via playback rate
+    // so the sphere never teleports mid-breath.
+    if (Math.abs(drift) < 120) return;
+    const correctionWindow = phaseDurationMs;
+    const rate = Math.min(1.25, Math.max(0.75, 1 - drift / correctionWindow));
+    anim.updatePlaybackRate(rate);
+    const id = window.setTimeout(
+      () => anim.updatePlaybackRate(1),
+      correctionWindow,
+    );
+    return () => window.clearTimeout(id);
   }, [phase, phaseDurationMs]);
+
 
   // Heartbeat tick: one animation for the whole session.
   useEffect(() => {

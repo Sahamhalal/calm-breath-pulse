@@ -13,6 +13,7 @@ import {
 } from "@/components/session/SegmentedRing";
 import { PulsingSphere } from "@/components/session/PulsingSphere";
 import { SmoothnessSetting } from "@/components/session/SmoothnessSetting";
+import { DeviceConnect } from "@/components/session/DeviceConnect";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -67,7 +68,7 @@ function useLockedZones(elapsedSec: number, coherenceLive: number) {
 }
 
 function SessionScreen() {
-  const { bpm, coherenceLive, elapsedSec } = useHrvSession();
+  const { bpm, coherenceLive, elapsedSec, simulated, device } = useHrvSession();
   const { phase, phaseDurationMs, breathCount } = useBreathingPacer();
   const zones = useLockedZones(elapsedSec, coherenceLive);
   const [smoothness, setSmoothness] = useState(1);

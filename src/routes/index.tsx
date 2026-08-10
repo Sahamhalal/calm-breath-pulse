@@ -13,6 +13,7 @@ import {
 } from "@/components/session/SegmentedRing";
 import { PulsingSphere } from "@/components/session/PulsingSphere";
 import { SmoothnessSetting } from "@/components/session/SmoothnessSetting";
+import { DeviceConnect } from "@/components/session/DeviceConnect";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -67,7 +68,7 @@ function useLockedZones(elapsedSec: number, coherenceLive: number) {
 }
 
 function SessionScreen() {
-  const { bpm, coherenceLive, elapsedSec } = useHrvSession();
+  const { bpm, coherenceLive, elapsedSec, simulated, device } = useHrvSession();
   const { phase, phaseDurationMs, breathCount } = useBreathingPacer();
   const zones = useLockedZones(elapsedSec, coherenceLive);
   const [smoothness, setSmoothness] = useState(1);
@@ -76,16 +77,22 @@ function SessionScreen() {
   return (
     <main className="flex min-h-screen flex-col bg-[image:var(--gradient-calm)] px-6 py-6">
       <header className="flex items-start justify-between">
-        <div className="flex items-center gap-2 rounded-full bg-card/70 px-4 py-2 shadow-[var(--shadow-soft)] backdrop-blur">
-          <HeartPulse className="size-4 text-destructive" aria-hidden />
-          <span className="text-lg font-semibold tabular-nums text-foreground">
-            {bpm}
-          </span>
-          <span className="text-xs uppercase tracking-widest text-muted-foreground">
-            bpm
+        <div className="flex flex-col items-start gap-1">
+          <div className="flex items-center gap-2 rounded-full bg-card/70 px-4 py-2 shadow-[var(--shadow-soft)] backdrop-blur">
+            <HeartPulse className="size-4 text-destructive" aria-hidden />
+            <span className="text-lg font-semibold tabular-nums text-foreground">
+              {bpm}
+            </span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">
+              bpm
+            </span>
+          </div>
+          <span className="pl-2 text-[10px] uppercase tracking-widest text-muted-foreground">
+            {simulated ? "Mod simulasi" : "Data langsung"}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
+          <DeviceConnect device={device} />
           <SmoothnessSetting value={smoothness} onChange={setSmoothness} />
           <button
             type="button"

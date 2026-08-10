@@ -107,7 +107,7 @@ function SessionScreen() {
 
       <h1 className="sr-only">Sesi biofeedback pernafasan HRV</h1>
 
-      <WaveformStrip bpm={bpm} />
+      <HrvGraph beats={beats} />
 
       <section className="flex flex-1 flex-col items-center justify-center gap-8">
         <SegmentedRing zones={zones}>

@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { X, HeartPulse } from "lucide-react";
 import { useHrvSession } from "@/hooks/useHrvSession";
 import { useBreathingPacer } from "@/hooks/useBreathingPacer";
-import { WaveformStrip } from "@/components/session/WaveformStrip";
+import { HrvGraph } from "@/components/session/HrvGraph";
 import {
   SegmentedRing,
   SEGMENT_COUNT,
@@ -68,7 +68,8 @@ function useLockedZones(elapsedSec: number, coherenceLive: number) {
 }
 
 function SessionScreen() {
-  const { bpm, coherenceLive, elapsedSec, simulated, device } = useHrvSession();
+  const { bpm, coherenceLive, elapsedSec, simulated, device, beats } =
+    useHrvSession();
   const { phase, phaseDurationMs, breathCount } = useBreathingPacer();
   const zones = useLockedZones(elapsedSec, coherenceLive);
   const [smoothness, setSmoothness] = useState(1);
@@ -106,7 +107,7 @@ function SessionScreen() {
 
       <h1 className="sr-only">Sesi biofeedback pernafasan HRV</h1>
 
-      <WaveformStrip bpm={bpm} />
+      <HrvGraph beats={beats} />
 
       <section className="flex flex-1 flex-col items-center justify-center gap-8">
         <SegmentedRing zones={zones}>

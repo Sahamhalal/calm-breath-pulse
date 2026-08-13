@@ -127,7 +127,33 @@ function SessionScreen() {
             </span>
             <span className="text-muted-foreground">/100</span>
           </p>
+          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            {(
+              [
+                ["Tinggi", "high", "--zone-high"],
+                ["Sederhana", "mid", "--zone-mid"],
+                ["Rendah", "low", "--zone-low"],
+              ] as const
+            ).map(([label, key, token]) => {
+              const total = counts.low + counts.mid + counts.high;
+              const pct = total ? Math.round((counts[key] / total) * 100) : 0;
+              return (
+                <span key={key} className="flex items-center gap-1.5">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: `var(${token})` }}
+                    aria-hidden
+                  />
+                  {label}
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {pct}%
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         </div>
+
       </section>
 
       <footer className="pb-2 text-center">

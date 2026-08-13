@@ -42,13 +42,15 @@ export function dominanceZones(
     .map((v, i) => ({ i, frac: v - Math.floor(v) }))
     .sort((a, b) => b.frac - a.frac);
   for (let k = 0; left > 0 && rema.length; k++, left--) {
-    sizes[rema[k % rema.length].i]++;
+    const target = rema[k % rema.length]!.i;
+    sizes[target] = (sizes[target] ?? 0) + 1;
   }
 
   const out: Zone[] = [];
   ordered.forEach((e, i) => {
-    for (let n = 0; n < sizes[i]; n++) out.push(e.zone);
+    for (let n = 0; n < (sizes[i] ?? 0); n++) out.push(e.zone);
   });
+
   while (out.length < segments) out.push("idle");
   return out.slice(0, segments);
 }

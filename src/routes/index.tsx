@@ -7,11 +7,11 @@ import { HrvGraph } from "@/components/session/HrvGraph";
 import { HrvMetrics } from "@/components/session/HrvMetrics";
 import {
   SegmentedRing,
-  SEGMENT_COUNT,
-  NOMINAL_SESSION_SEC,
+  dominanceZones,
   zoneFor,
-  type Zone,
+  type ZoneCounts,
 } from "@/components/session/SegmentedRing";
+
 import { PulsingSphere } from "@/components/session/PulsingSphere";
 import { SmoothnessSetting } from "@/components/session/SmoothnessSetting";
 import { DeviceConnect } from "@/components/session/DeviceConnect";

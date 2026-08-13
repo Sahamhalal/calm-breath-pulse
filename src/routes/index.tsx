@@ -4,6 +4,7 @@ import { X, HeartPulse } from "lucide-react";
 import { useHrvSession } from "@/hooks/useHrvSession";
 import { useBreathingPacer } from "@/hooks/useBreathingPacer";
 import { HrvGraph } from "@/components/session/HrvGraph";
+import { HrvMetrics } from "@/components/session/HrvMetrics";
 import {
   SegmentedRing,
   SEGMENT_COUNT,
@@ -108,6 +109,7 @@ function SessionScreen() {
       <h1 className="sr-only">Sesi biofeedback pernafasan HRV</h1>
 
       <HrvGraph beats={beats} />
+      <HrvMetrics beats={beats} />
 
       <section className="flex flex-1 flex-col items-center justify-center gap-8">
         <SegmentedRing zones={zones}>

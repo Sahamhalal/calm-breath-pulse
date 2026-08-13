@@ -114,11 +114,14 @@ export function PulsingSphere({
 
   return (
     <div ref={breathRef} className="will-change-transform">
-      <div ref={beatRef} className="will-change-transform">
-        <div className="size-36 rounded-full bg-[image:var(--gradient-sphere)] shadow-[var(--shadow-glow)]">
-          <div className="size-full rounded-full bg-[image:var(--gradient-sphere-sheen)]" />
+      <div ref={beatRef} className="relative will-change-transform">
+        <div className="relative size-36 rounded-full bg-[image:var(--gradient-sphere)] shadow-[var(--shadow-glow)]">
+          <div className="absolute inset-0 rounded-full bg-[image:var(--gradient-sphere-sheen)]" />
+          <div className="absolute left-[18%] top-[14%] size-8 -rotate-25 rounded-full bg-card/70 blur-[6px]" />
         </div>
+        <div className="absolute -bottom-5 left-1/2 h-3 w-24 -translate-x-1/2 rounded-full bg-foreground/10 blur-md" />
       </div>
     </div>
   );
 }
+

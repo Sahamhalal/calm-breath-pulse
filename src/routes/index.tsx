@@ -7,11 +7,11 @@ import { HrvGraph } from "@/components/session/HrvGraph";
 import { HrvMetrics } from "@/components/session/HrvMetrics";
 import {
   SegmentedRing,
-  SEGMENT_COUNT,
-  NOMINAL_SESSION_SEC,
+  dominanceZones,
   zoneFor,
-  type Zone,
+  type ZoneCounts,
 } from "@/components/session/SegmentedRing";
+
 import { PulsingSphere } from "@/components/session/PulsingSphere";
 import { SmoothnessSetting } from "@/components/session/SmoothnessSetting";
 import { DeviceConnect } from "@/components/session/DeviceConnect";
@@ -38,41 +38,33 @@ export const Route = createFileRoute("/")({
   component: SessionScreen,
 });
 
-function useLockedZones(elapsedSec: number, coherenceLive: number) {
-  const [zones, setZones] = useState<Zone[]>(() =>
-    Array<Zone>(SEGMENT_COUNT).fill("idle"),
-  );
+/** Accumulate one coherence sample per elapsed second, per zone. */
+function useZoneCounts(elapsedSec: number, coherenceLive: number) {
+  const [counts, setCounts] = useState<ZoneCounts>({
+    low: 0,
+    mid: 0,
+    high: 0,
+  });
   const coherenceRef = useRef(coherenceLive);
   coherenceRef.current = coherenceLive;
 
   useEffect(() => {
-    const secPerSegment = NOMINAL_SESSION_SEC / SEGMENT_COUNT;
-    const reached = Math.min(
-      SEGMENT_COUNT,
-      Math.floor(elapsedSec / secPerSegment) + (elapsedSec > 0 ? 1 : 0),
-    );
-    setZones((prev) => {
-      if (reached === 0) return prev;
-      let changed = false;
-      const next = prev.slice();
-      for (let i = 0; i < reached; i++) {
-        if (next[i] === "idle") {
-          next[i] = zoneFor(coherenceRef.current);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
+    if (elapsedSec <= 0) return;
+    const zone = zoneFor(coherenceRef.current);
+    if (zone === "idle") return;
+    setCounts((prev) => ({ ...prev, [zone]: prev[zone] + 1 }));
   }, [elapsedSec]);
 
-  return zones;
+  return counts;
 }
 
 function SessionScreen() {
   const { bpm, coherenceLive, elapsedSec, simulated, device, beats } =
     useHrvSession();
   const { phase, phaseDurationMs, breathCount } = useBreathingPacer();
-  const zones = useLockedZones(elapsedSec, coherenceLive);
+  const counts = useZoneCounts(elapsedSec, coherenceLive);
+  const zones = dominanceZones(counts);
+
   const [smoothness, setSmoothness] = useState(1);
 
 
@@ -135,7 +127,33 @@ function SessionScreen() {
             </span>
             <span className="text-muted-foreground">/100</span>
           </p>
+          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            {(
+              [
+                ["Tinggi", "high", "--zone-high"],
+                ["Sederhana", "mid", "--zone-mid"],
+                ["Rendah", "low", "--zone-low"],
+              ] as const
+            ).map(([label, key, token]) => {
+              const total = counts.low + counts.mid + counts.high;
+              const pct = total ? Math.round((counts[key] / total) * 100) : 0;
+              return (
+                <span key={key} className="flex items-center gap-1.5">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: `var(${token})` }}
+                    aria-hidden
+                  />
+                  {label}
+                  <span className="font-semibold tabular-nums text-foreground">
+                    {pct}%
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         </div>
+
       </section>
 
       <footer className="pb-2 text-center">
